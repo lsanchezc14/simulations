@@ -28,6 +28,8 @@ public class Game1 : Game
     private MouseState _previousMouseState;
     private const float CameraRotationSpeed = 0.01f;
     private const float CameraZoomSpeed = 0.01f;
+    private BodyHandle _firstDominoHandle;
+    private KeyboardState _previousKeyboardState;
 
     public Game1()
     {
@@ -48,26 +50,22 @@ public class Game1 : Game
             System.Numerics.Quaternion.Identity,
             width: 50,
             height: 1,
-            length: 50);
+            length: 100);
 
         // Add a ramp
         var rampRotation = System.Numerics.Quaternion.CreateFromAxisAngle(System.Numerics.Vector3.UnitX, -0.2f);
         _physicsSimulation.AddStaticBox(
             new System.Numerics.Vector3(0, 1f, -10f),
             rampRotation,
-            width: 10f,
+            width: 25000f,
             height: 1f,
-            length: 20f);
-
-
-        //_previousMouseState = Mouse.GetState();
+            length: 1000f);
 
         // Add dominoes
         const float dominoWidth = 0.2f;
         const float dominoHeight = 1.0f;
-        const float dominoLength = 0.6f;
-        //const float dominoSpacing = 0.55f;
-        const float dominoSpacing = 10f;
+        const float dominoLength = 0.55f;
+        const float dominoSpacing = 5f;
 
         for (int i=0; i < 15; i++)
         {
@@ -78,10 +76,16 @@ public class Game1 : Game
             
             var handle = _physicsSimulation.AddDynamicBox(
                 position,
+                System.Numerics.Quaternion.Identity,
                 dominoWidth,
                 dominoHeight,
                 dominoLength,
                 mass: 1f);
+
+            if (i == 0)
+            {
+                _firstDominoHandle = handle;
+            }
 
             _entities.Add(new PhysicsEntity(_boxModel, handle));
         }
@@ -103,6 +107,14 @@ public class Game1 : Game
         UpdateCameraMouseState();
         UpdateCameraMatrices();
         
+        var keyboardState = Keyboard.GetState();
+        if (keyboardState.IsKeyDown(Keys.Space) && !_previousKeyboardState.IsKeyDown(Keys.Space))
+        {
+            _physicsSimulation.ApplyImpulse(_firstDominoHandle, new System.Numerics.Vector3(0, 0, 50));
+        }
+        _previousKeyboardState = keyboardState;
+
+        _physicsSimulation.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
         base.Update(gameTime);
     }
 

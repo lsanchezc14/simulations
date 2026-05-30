@@ -25,7 +25,7 @@ namespace Demo.Physics
             Simulation = Simulation.Create(
                 _bufferPool,
                 Callbacks,
-                new PoseIntegratorCallbacks(new Vector3(0, -9.81f, 0)),
+                new PoseIntegratorCallbacks(gravity: new Vector3(0, -9.81f, 0)),
                 new SolveDescription(8, 1));
         }
 
@@ -33,20 +33,27 @@ namespace Demo.Physics
 
         public void Update(float deltaTime)
         {
+            if (deltaTime <= 0f)
+            {
+                return;
+            }
+
             Simulation.Timestep(deltaTime, _threadDispatcher);
         }
 
         public BodyHandle AddDynamicBox(
-            System.Numerics.Vector3 position,
+            Vector3 position,
+            Quaternion orientation,
             float width,
             float height,
             float length,
             float mass)
         {
+            var pose = new RigidPose(position, orientation);
             var shape = new Box(width, height, length);
             var inertia = shape.ComputeInertia(mass);
             var description = BodyDescription.CreateDynamic(
-                position,
+                pose,
                 inertia,
                 Simulation.Shapes.Add(shape),
                 new BodyActivityDescription(0.01f));
@@ -68,6 +75,13 @@ namespace Demo.Physics
                 Simulation.Shapes.Add(shape));
 
             return Simulation.Statics.Add(description);
+        }
+
+        public void ApplyImpulse(BodyHandle bodyHandle, Vector3 impulse)
+        {
+            var bodyReference = Simulation.Bodies.GetBodyReference(bodyHandle);
+            bodyReference.Awake = true;
+            bodyReference.ApplyImpulse(impulse, new Vector3(0, -1, 0));
         }
 
         public void Dispose()
