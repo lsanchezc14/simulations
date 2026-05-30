@@ -39,10 +39,10 @@ namespace Demo.Physics
             {
                 foreach (BasicEffect effect in mesh.Effects)
                 {
-                    effect.EnableDefaultLighting();
-                    effect.World = _boneTransforms[mesh.ParentBone.Index] * worldMatrix;
                     effect.View = view;
+                    effect.World = _boneTransforms[mesh.ParentBone.Index] * worldMatrix;
                     effect.Projection = projection;
+                    effect.EnableDefaultLighting();
                 }
                 mesh.Draw();
             }
