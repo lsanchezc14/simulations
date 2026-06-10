@@ -8,6 +8,8 @@ public class Game1 : Game
 {
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
+    private Main.World _world;
+    private Main.EventBus _eventBus;
 
     public Game1()
     {
